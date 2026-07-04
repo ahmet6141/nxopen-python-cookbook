@@ -1,5 +1,7 @@
 # 06 · Resources
 
+> 🌐 **English** · [Türkçe](tr/06-resources.md)
+
 Places worth bookmarking when you're stuck. The **single most reliable reference is your own local stubs** — they match your exact NX version, unlike anything online.
 
 ## Your local install (check here first)

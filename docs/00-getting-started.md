@@ -1,5 +1,7 @@
 # 00 · Getting Started with Headless NX Journaling
 
+> 🌐 **English** · [Türkçe](tr/00-getting-started.md)
+
 ## What "headless journaling" means
 
 A **journal** is a Python (or VB/C#) script that drives NX through the NXOpen API. NX can run a journal two ways:

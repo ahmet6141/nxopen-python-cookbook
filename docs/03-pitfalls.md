@@ -1,5 +1,7 @@
 # 03 · Pitfalls — the runtime trap list
 
+> 🌐 **English** · [Türkçe](tr/03-pitfalls.md)
+
 NXOpen fails at runtime, not at import, and the error strings rarely name the real cause. This is the consolidated list, each as **symptom → fix**. Grouped by where they bite.
 
 ## API surface / signatures

@@ -1,10 +1,10 @@
-# 02 · Verified Recipes
+> 🌐 [English](../02-verified-recipes.md) · **Türkçe**
 
-> 🌐 **English** · [Türkçe](tr/02-verified-recipes.md)
+# 02 · Doğrulanmış Reçeteler
 
-Copy-paste feature recipes. **Every one of these was committed successfully in a live headless NX 2506 journal** and the resulting body inspected (face counts, volume, mass). Where a commonly-cited signature is wrong, the correct one is here.
+Kopyala-yapıştır feature reçeteleri. **Bunların her biri canlı, headless bir NX 2506 journal'ında başarıyla commit edildi** ve ortaya çıkan gövde (face sayıları, hacim, kütle) incelendi. Yaygın olarak belirtilen bir imza yanlışsa, doğrusu burada.
 
-Common preamble:
+Ortak preamble:
 
 ```python
 import NXOpen, NXOpen.Features, NXOpen.GeometricUtilities, NXOpen.Annotations
@@ -12,13 +12,13 @@ session = NXOpen.Session.GetSession()
 part = session.Parts.NewBaseDisplay(path, NXOpen.BasePart.Units.Millimeters)
 ```
 
-> **Golden rule for all builders below:** a failed `Commit()` **poisons the builder** — do not retry on the same object. Recreate the builder from scratch each attempt. And never `import NXOpen.SubModule` *inside a function* (it makes `NXOpen` a local name for the whole function → *"cannot access local variable 'NXOpen'"*); put submodule imports at module top.
+> **Aşağıdaki tüm builder'lar için altın kural:** başarısız bir `Commit()` **builder'ı zehirler** — aynı nesne üzerinde tekrar denemeyin. Her denemede builder'ı sıfırdan yeniden oluşturun. Ve `import NXOpen.SubModule` ifadesini asla *bir fonksiyonun içinde* kullanmayın (bu, `NXOpen`'ı tüm fonksiyon için yerel bir isim yapar → *"cannot access local variable 'NXOpen'"*); alt modül import'larını modülün en üstüne koyun.
 
 ---
 
 ## 2.1 Edge Blend (fillet)
 
-Proof: face count went 8 → 12.
+Kanıt: face sayısı 8 → 12 oldu.
 
 ```python
 ebb  = part.Features.CreateEdgeBlendBuilder(NXOpen.Features.Feature.Null)
@@ -29,13 +29,13 @@ ebb.AddChainset(col, "4")                                # radius is a STRING EX
 feat = ebb.CommitFeature(); ebb.Destroy()
 ```
 
-> The single most common EdgeBlend failure online comes from the wrong signature. It is **`AddChainset(ScCollector, "radius")`** — a smart-collector plus a radius *string* — **not** `AddChainset(edge, index)`. `AddVariableRadiusData` is for variable-radius blends and has a different signature entirely.
+> Çevrimiçi en yaygın EdgeBlend hatası yanlış imzadan kaynaklanır. Doğrusu **`AddChainset(ScCollector, "radius")`** — bir smart-collector artı bir radius *string*'i — `AddChainset(edge, index)` **değil**. `AddVariableRadiusData`, değişken yarıçaplı blend'ler içindir ve tamamen farklı bir imzaya sahiptir.
 
 ---
 
 ## 2.2 Chamfer
 
-Proof: face count 12 → 13.
+Kanıt: face sayısı 12 → 13.
 
 ```python
 cb  = part.Features.CreateChamferBuilder(NXOpen.Features.Feature.Null)
@@ -47,13 +47,13 @@ cb.FirstOffset = "2"                                               # string; Fir
 feat = cb.CommitFeature(); cb.Destroy()
 ```
 
-> There is **no** `AddChainsToCollector([edge])` method. Assign the collector to `SmartCollector`.
+> `AddChainsToCollector([edge])` diye bir metot **yoktur**. Collector'ı `SmartCollector`'a atayın.
 
 ---
 
 ## 2.3 Draft (Face)
 
-The most fiddly of the set — angle comes through an expression-collector set, and tolerances must be set explicitly.
+Setin en cilveli olanı — açı bir expression-collector seti üzerinden gelir ve tolerans değerleri açıkça ayarlanmalıdır.
 
 ```python
 db = part.Features.CreateDraftBuilder(NXOpen.Features.Feature.Null)
@@ -73,11 +73,11 @@ db.FaceSetAngleExpressionList.Append(ecs)                  # Append only accepts
 feat = db.CommitFeature(); db.Destroy()
 ```
 
-> Two traps here: `SymmetricAngle` is a **bool**, not the angle carrier — the angle rides on the `ExpressionCollectorSet`. And the unit argument to `CreateExpressionCollectorSet` must be **`""`** — passing `"Degrees"`/`"deg"` raises *"invalid unit measure."*
+> Burada iki tuzak var: `SymmetricAngle` açıyı taşıyan değil, bir **bool**'dur — açı `ExpressionCollectorSet` üzerinde gider. Ve `CreateExpressionCollectorSet`'e verilen unit argümanı **`""`** olmalıdır — `"Degrees"`/`"deg"` geçmek *"invalid unit measure."* hatası verir.
 
 ---
 
-## 2.4 Symbolic Thread
+## 2.4 Symbolic Thread (Simgesel Diş)
 
 ```python
 tb = part.Features.CreateThreadBuilder(NXOpen.Features.Thread.Null)     # note: Thread.Null, not Feature.Null
@@ -95,15 +95,15 @@ tb.ThreadLength.RightHandSide = "20"
 feat = tb.CommitFeature(); tb.Destroy()
 ```
 
-Notes:
-- **Use `Input.Manual`.** The standard thread table (`NX_Thread_Standard.xml`) throws *"Standard data not found"* under headless.
-- **Thread before chamfer.** If a chamfer has already eaten the top edge of the cylinder, the neighbouring start face becomes invalid. Apply the thread first, or try multiple candidate `StartObject` faces in sequence.
+Notlar:
+- **`Input.Manual` kullanın.** Standart diş tablosu (`NX_Thread_Standard.xml`), headless altında *"Standard data not found"* hatası fırlatır.
+- **Chamfer'den önce diş.** Bir chamfer, silindirin üst kenarını zaten yemişse, komşu başlangıç yüzü geçersiz hale gelir. Dişi önce uygulayın veya sırayla birden fazla aday `StartObject` yüzü deneyin.
 
 ---
 
-## 2.5 Shell
+## 2.5 Shell (Kabuk)
 
-Proof: volume 64000 → ~14000 mm³.
+Kanıt: hacim 64000 → ~14000 mm³.
 
 ```python
 sb = part.Features.CreateShellBuilder(NXOpen.Features.Feature.Null)
@@ -118,9 +118,9 @@ feat = sb.CommitFeature(); sb.Destroy()
 
 ---
 
-## 2.6 Mirror Body
+## 2.6 Mirror Body (Gövde Aynalama)
 
-Proof: body count 3 → 4.
+Kanıt: gövde sayısı 3 → 4.
 
 ```python
 m = NXOpen.Matrix3x3()                 # rows are the X, Y, Z axes; the Z row is the plane NORMAL
@@ -136,13 +136,13 @@ feat = mb.CommitFeature(); mb.Destroy()
 new_body = feat.GetBodies()[0]
 ```
 
-> `CreateMirrorBodyBuilder` **does exist** (some docs claim otherwise). It needs a genuine **fixed datum plane** — a `Planes.CreatePlane` object is rejected.
+> `CreateMirrorBodyBuilder` **gerçekten mevcuttur** (bazı dokümanlar aksini iddia eder). Gerçek bir **fixed datum plane** ister — bir `Planes.CreatePlane` nesnesi reddedilir.
 
 ---
 
-## 2.7 Hole Package
+## 2.7 Hole Package (Delik Paketi)
 
-Proof: face count 8 → 9.
+Kanıt: face sayısı 8 → 9.
 
 ```python
 hp = part.Features.CreateHolePackageBuilder(NXOpen.Features.HolePackage.Null)
@@ -166,9 +166,9 @@ feat = hp.CommitFeature(); hp.Destroy()
 
 ---
 
-## 2.8 Assign material (NX MatML library)
+## 2.8 Malzeme atama (NX MatML kütüphanesi)
 
-Proof: Steel loaded, mass 1.1847 kg → ρ = 7.83 g/cm³ (correct for NX Steel).
+Kanıt: Steel yüklendi, kütle 1.1847 kg → ρ = 7.83 g/cm³ (NX Steel için doğru).
 
 ```python
 pm  = part.MaterialManager.PhysicalMaterials
@@ -179,13 +179,13 @@ mat.AssignObjects([body])                      # assignment lives on the MATERIA
 # pm.GetLoadedLibraryMaterial("physicalmateriallibrary.xml", "Steel")
 ```
 
-> The often-cited `MaterialManager.LoadMaterialsFromLibrary` / `AssignMaterialToBody` **do not exist**. Use the two calls above.
+> Sıkça belirtilen `MaterialManager.LoadMaterialsFromLibrary` / `AssignMaterialToBody` **mevcut değildir**. Yukarıdaki iki çağrıyı kullanın.
 
 ---
 
-## 2.9 Mass properties measurement
+## 2.9 Kütle özellikleri ölçümü
 
-Proof: V = 151324.66 mm³, A = 19258.49 mm², m = 1.1847 kg.
+Kanıt: V = 151324.66 mm³, A = 19258.49 mm², m = 1.1847 kg.
 
 ```python
 uc = part.UnitCollection
@@ -197,9 +197,9 @@ volume, area, mass, centroid = mp.Volume, mp.Area, mp.Mass, mp.Centroid
 
 ---
 
-## 2.10 PMI Note
+## 2.10 PMI Notu
 
-Proof: a PmiNote object was created.
+Kanıt: bir PmiNote nesnesi oluşturuldu.
 
 ```python
 nb = part.Annotations.CreatePmiNoteBuilder(NXOpen.Annotations.SimpleDraftingAid.Null)
@@ -209,16 +209,16 @@ nb.Origin.Origin.SetValue(NXOpen.TaggedObject.Null, part.Views.WorkView,
 note = nb.Commit(); nb.Destroy()
 ```
 
-> The correct entry point is `Annotations.CreatePmiNoteBuilder(None)`; `PmiNotes.CreatePmiNote(...)` does not exist. Text is set through `.Text.TextBlock.SetText([...])`.
+> Doğru giriş noktası `Annotations.CreatePmiNoteBuilder(None)`'dır; `PmiNotes.CreatePmiNote(...)` mevcut değildir. Metin `.Text.TextBlock.SetText([...])` üzerinden ayarlanır.
 
 ---
 
-## 2.11 Headless image export — NOT possible
+## 2.11 Headless görüntü dışa aktarma — MÜMKÜN DEĞİL
 
-Listed here so nobody wastes time on it: rendering a PNG from a headless journal cannot work — there is no graphics window. See [00-getting-started.md](00-getting-started.md#the-one-thing-that-does-not-work-headless-image-export). Do image export in the interactive GUI.
+Kimse bununla vakit kaybetmesin diye buraya listelendi: headless bir journal'dan PNG render etmek çalışamaz — çünkü grafik penceresi yoktur. Bkz. [00-getting-started.md](00-getting-started.md#the-one-thing-that-does-not-work-headless-image-export). Görüntü dışa aktarmayı etkileşimli GUI'de yapın.
 
 ---
 
-### Sanity check that these are real
+### Bunların gerçek olduğuna dair akıl sağlığı kontrolü
 
-An 80×60×30 block + a Ø20×25 boss measured **V = 151853.98 mm³**, exactly the analytic sum (144000 + 7853.98). After a blend + chamfer it dropped to **151324.66 mm³** (a sensible amount of material removed). Assigning Steel gave **1.1847 kg → ρ = 7.829 g/cm³**, matching NX's Steel. The example in [examples/block_with_boss.py](../examples/block_with_boss.py) reproduces this.
+80×60×30 bir blok + Ø20×25 bir boss, tam olarak analitik toplama (144000 + 7853.98) eşit **V = 151853.98 mm³** ölçüldü. Bir blend + chamfer sonrasında **151324.66 mm³**'e düştü (makul miktarda malzeme kaldırılmış). Steel atamak **1.1847 kg → ρ = 7.829 g/cm³** verdi, bu da NX'in Steel'iyle eşleşiyor. [examples/block_with_boss.py](../examples/block_with_boss.py) içindeki örnek bunu yeniden üretir.

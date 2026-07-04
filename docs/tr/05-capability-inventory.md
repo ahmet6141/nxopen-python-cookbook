@@ -1,12 +1,12 @@
-# 05 · Capability Inventory
+> 🌐 [English](../05-capability-inventory.md) · **Türkçe**
 
-> 🌐 **English** · [Türkçe](tr/05-capability-inventory.md)
+# 05 · Yetenek Envanteri
 
-Beyond the everyday features, NXOpen exposes a large toolbox. This is a stub-mined, signature-checked inventory of the parts worth knowing about for headless work. Confirm exact signatures against your own `.../UGOPEN/pythonStubs/` — they match your install.
+Gündelik feature'ların ötesinde, NXOpen geniş bir araç kutusu sunar. Bu, headless çalışma için bilinmeye değer parçaların stub'lardan taranmış, imzaları (signature) doğrulanmış bir envanteridir. Kesin imzaları kendi `.../UGOPEN/pythonStubs/` dizininize göre teyit edin — onlar sizin kurulumunuzla eşleşir.
 
-## Feature factories on `part.Features`
+## `part.Features` üzerindeki feature factory'leri
 
-Useful builders you may not know exist (all `Create*`):
+Var olduğunu bilmeyebileceğiniz kullanışlı builder'lar (hepsi `Create*`):
 
 ```
 BlockFeatureBuilder, CylinderBuilder, ConeBuilder, SphereBuilder, TubeBuilder,
@@ -18,9 +18,9 @@ WaveLinkBuilder (WAVE link), BooleanBuilderUsingCollector, DatumPlaneBuilder,
 DatumCsysBuilder, HoleFeatureBuilder (legacy hole), EmbossBuilder, OffsetSurfaceBuilder
 ```
 
-## Combine / subtract two existing bodies
+## Var olan iki gövdeyi birleştirme / çıkarma
 
-Standalone boolean feature (when the inline extrude/revolve path doesn't fit):
+Bağımsız (standalone) boolean feature'ı (satır içi extrude/revolve yolu uymadığında):
 
 ```python
 bb = part.Features.CreateBooleanBuilderUsingCollector(NXOpen.Features.BooleanFeature.Null)
@@ -30,13 +30,13 @@ bb.Tool   = tool_body                    # or use the Target/Tool body collector
 feat = bb.CommitFeature()
 ```
 
-Builder-free shortcut:
+Builder'sız kısayol:
 
 ```python
 part.Features.CreateUniteFeature(target, keep_target, [tools], keep_tools, allow_nonassociative)
 ```
 
-## Move / rotate a body parametrically
+## Bir gövdeyi parametrik olarak taşıma / döndürme
 
 ```python
 mo = part.Features.CreateMoveObjectBuilder(NXOpen.Features.MoveObject.Null)
@@ -50,7 +50,7 @@ mo.Commit(); mo.Destroy()
 # Rotate: Option = Angle, then set AngularAxis (Axis) and Angle (Expression)
 ```
 
-## Assemblies — add a component and constrain it
+## Montajlar (assembly) — bir bileşen (component) ekleme ve kısıtlama (constraint)
 
 ```python
 comp, status = part.ComponentAssembly.AddComponent(
@@ -70,23 +70,23 @@ pos.EndAssemblyConstraints()
 # part.ComponentAssembly.MoveComponent(comp, Vector3d, Matrix3x3)
 ```
 
-## Export formats (`session.DexManager.Create*`)
+## Dışa aktarma (export) formatları (`session.DexManager.Create*`)
 
 ```
 STEP (Ap203 / Ap214 / Ap242 / Ap242ED2), Parasolid, IGES, ACIS,
 CATIA v4/v5, DXF/DWG, STL, 3MF, OBJ, IFC, USDZ, NXto2d …
 ```
 
-> **JT lives elsewhere:** `session.PvtransManager.CreateJtCreator()` — there is **no** `CreateJtCreator` on `DexManager`.
+> **JT başka bir yerde yaşar:** `session.PvtransManager.CreateJtCreator()` — `DexManager` üzerinde `CreateJtCreator` **yoktur**.
 
-## Curves — helix & freeform spline
+## Eğriler — helis (helix) & serbest form spline
 
-- **Helix** — `CreateHelixBuilder`: `SizeOption` (Diameter/Radius), `PitchLaw`/`SizeLaw` (LawBuilder), `NumberOfTurns` (string), `TurnDirection` (RightHand/LeftHand), `CoordinateSystem`.
-- **Spline** — `CreateStudioSplineBuilderEx(None)`: `Type` = ThroughPoints/ByPoles, `Degree`, and points added via
+- **Helis** — `CreateHelixBuilder`: `SizeOption` (Diameter/Radius), `PitchLaw`/`SizeLaw` (LawBuilder), `NumberOfTurns` (string), `TurnDirection` (RightHand/LeftHand), `CoordinateSystem`.
+- **Spline** — `CreateStudioSplineBuilderEx(None)`: `Type` = ThroughPoints/ByPoles, `Degree`, ve noktalar şu şekilde eklenir:
   `ConstraintManager.CreateGeometricConstraintData()` → `.Point = part.Points.CreatePoint(...)` → `Append`.
-  (There is no `CreateSpline` on `CurveCollection`.)
+  (`CurveCollection` üzerinde `CreateSpline` yoktur.)
 
-## Visual distinction & metadata
+## Görsel ayrım & metadata
 
 ```python
 # Body colour (helps tell parts apart in the Part Navigator / exports)
@@ -99,7 +99,7 @@ dm.Apply([body]); dm.Dispose()
 body.SetUserAttribute("PART_NO", -1, "WIDGET-0042", NXOpen.Update.Option.Now)
 ```
 
-## Session & part lifecycle (multi-part batch builds)
+## Oturum (session) & parça (part) yaşam döngüsü (çok parçalı toplu derlemeler)
 
 ```python
 # Close one part (whole tree):

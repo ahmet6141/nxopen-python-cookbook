@@ -1,5 +1,7 @@
 # NXOpen Python Cookbook
 
+> 🌐 **English** · [Türkçe](README.tr.md)
+
 > Verified, copy-paste recipes and hard-won pitfalls for **headless Siemens NX journaling** with the NXOpen Python API.
 
 Most NXOpen material online is written for the interactive GUI and stops at "record a journal, tweak it." This cookbook is different: it targets **fully headless, parametric, batch geometry generation** driven by `run_journal.exe` — the workflow you need when you generate CAD from code (parameters → blueprint → solid model) with no human in the loop.
@@ -40,9 +42,20 @@ A headless journal opens a **second** NX session cleanly even while the GUI is a
 - **Not affiliated with Siemens.** NX, NXOpen, and Parasolid are trademarks of Siemens Digital Industries Software. This is an independent, community reference.
 - **No warranty.** These recipes mutate CAD geometry and can overwrite files. Read before you run.
 
+## Support this project
+
+This is free knowledge, and the best support costs nothing:
+
+- ⭐ **Star** the repo if it saved you time — that's the whole reward this project asks for.
+- 👀 **Watch / follow** to catch new recipes and version notes.
+- 🔧 **Contribute** a verified recipe or a version-specific correction (see [CONTRIBUTING.md](CONTRIBUTING.md)) — that's the most valuable support of all.
+- 🔗 **Share it** with anyone automating NX, or link it from an NX community thread.
+
+> No donations, no sponsorship — this repo intentionally has none. If you want to collaborate on procedural/parametric CAD work, open an issue or start a discussion.
+
 ## License
 
-[MIT](LICENSE) — use it freely, attribution appreciated. If it saved you an afternoon, a ⭐ on the repo is the whole reward this project asks for.
+[MIT](LICENSE) — use it freely, attribution appreciated.
 
 ## Contributing
 

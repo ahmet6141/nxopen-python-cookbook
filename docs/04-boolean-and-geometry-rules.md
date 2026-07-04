@@ -1,5 +1,7 @@
 # 04 · Boolean & Geometry Rules for Procedural Modeling
 
+> 🌐 **English** · [Türkçe](tr/04-boolean-and-geometry-rules.md)
+
 When you generate solids from code, the boolean operations are where models quietly go wrong. NX will report a unite/subtract as *successful* and still leave you with disconnected bodies. These rules were learned the hard way building large multi-body assemblies headless; they are geometry facts, not API quirks.
 
 ## What actually fuses

@@ -1,8 +1,8 @@
-# 01 · Core NXOpen API
+> 🌐 [English](../01-core-api.md) · **Türkçe**
 
-> 🌐 **English** · [Türkçe](tr/01-core-api.md)
+# 01 · Çekirdek NXOpen API
 
-The primitives you use in almost every headless journal. All verified on NX 2506.
+Neredeyse her headless journal'da kullandığın primitifler. Hepsi NX 2506 üzerinde doğrulanmıştır.
 
 ## Session & Part
 
@@ -14,22 +14,22 @@ session = NXOpen.Session.GetSession()
 part = session.Parts.NewBaseDisplay(path, NXOpen.BasePart.Units.Millimeters)
 ```
 
-> **Trap:** it is `NXOpen.BasePart.Units.Millimeters`, **not** `Part.Units.Millimeters` — the latter raises *"Second parameter is invalid."*
+> **Tuzak:** doğrusu `NXOpen.BasePart.Units.Millimeters`'dır, **`Part.Units.Millimeters` değil** — ikincisi *"Second parameter is invalid."* hatasını fırlatır.
 
-> **Trap:** `NewBaseDisplay` **refuses to overwrite** an existing `.prt`. Delete the target file first if you're rebuilding to the same path.
+> **Tuzak:** `NewBaseDisplay` mevcut bir `.prt`'nin **üzerine yazmayı reddeder**. Aynı yola yeniden build alacaksan önce hedef dosyayı sil.
 
-## Expressions
+## Expression'lar
 
-Parametric dimensions live as expressions. Always drive them through `RightHandSide`:
+Parametrik boyutlar expression olarak yaşar. Bunları her zaman `RightHandSide` üzerinden sür:
 
 ```python
 e = part.Expressions.CreateWithUnits("width=80", unit)        # unit: Millimeter / Degrees / Number
 part.Expressions.EditWithUnits(e, unit, "100")               # new RHS
 ```
 
-> **Trap:** set values via **`RightHandSide`** (a string), not `.Value`. Assigning `.Value` on a length applies an extra unit conversion and you get a silent **25.4×** error (inches↔mm).
+> **Tuzak:** değerleri **`RightHandSide`** (bir string) ile ayarla, `.Value` ile değil. Bir uzunluk üzerinde `.Value` ataması ekstra bir birim dönüşümü uygular ve sessizce **25.4×** hatası alırsın (inç↔mm).
 
-## Extrude — the workhorse
+## Extrude — iş atı
 
 ```python
 ext = part.Features.CreateExtrudeBuilder(NXOpen.Features.Feature.Null)
@@ -55,9 +55,9 @@ rev.BooleanOperation.Type = bool_type
 feat = rev.CommitFeature(); rev.Destroy()
 ```
 
-A revolve takes a **single closed profile** and spins it about an axis — ideal for any body of revolution (shafts, hubs, discs, bosses). Prefer one closed profile over unioning many cylinders; see [04-boolean-and-geometry-rules.md](04-boolean-and-geometry-rules.md).
+Bir revolve, **tek bir kapalı profil** alır ve onu bir eksen etrafında döndürür — herhangi bir dönel gövde (şaft, göbek, disk, kabartma) için idealdir. Birçok silindiri union etmek yerine tek bir kapalı profili tercih et; bkz. [04-boolean-and-geometry-rules.md](04-boolean-and-geometry-rules.md).
 
-## Section (curve chains feed extrude/revolve)
+## Section (eğri zincirleri extrude/revolve'u besler)
 
 ```python
 section = part.Sections.CreateSection(0.0095, 0.001, 0.5)     # chaining / distance / angle tol
@@ -68,29 +68,29 @@ section.AddToSection([rule], curves[0],
                      help_pt, NXOpen.Section.Mode.Create, False)
 ```
 
-## Curves
+## Eğriler
 
 ```python
 line = part.Curves.CreateLine(p0, p1)                         # p = NXOpen.Point3d(x, y, z)
 arc  = part.Curves.CreateArc(center, xDir, yDir, radius, start_angle, end_angle)  # angles in RADIANS
 ```
 
-> **Trap:** every coordinate must be a **float**. Passing an `int` into `Point3d` / arc parameters raises *"Expecting double."* Write `0.0`, not `0`.
+> **Tuzak:** her koordinat bir **float** olmalıdır. `Point3d` / arc parametrelerine bir `int` geçirmek *"Expecting double."* hatasını fırlatır. `0` değil `0.0` yaz.
 
-## Booleans
+## Boolean'lar
 
-For most procedural work you do **not** need a standalone boolean feature — do it inline on the extrude/revolve builder:
+Çoğu prosedürel iş için ayrı bir boolean feature'a **ihtiyacın yoktur** — bunu doğrudan extrude/revolve builder üzerinde inline yap:
 
 ```python
 builder.BooleanOperation.Type = NXOpen.GeometricUtilities.BooleanOperation.BooleanType.Unite   # or Subtract
 builder.BooleanOperation.SetTargetBodies([target_body])
 ```
 
-When you genuinely need to combine two *existing* bodies, see the standalone `BooleanBuilder` and the `CreateUniteFeature` shortcut in [05-capability-inventory.md](05-capability-inventory.md). What actually fuses (and what silently doesn't) is covered in [04-boolean-and-geometry-rules.md](04-boolean-and-geometry-rules.md).
+Gerçekten iki *mevcut* gövdeyi birleştirmen gerektiğinde, [05-capability-inventory.md](05-capability-inventory.md) içindeki ayrı `BooleanBuilder`'a ve `CreateUniteFeature` kısayoluna bak. Neyin gerçekten kaynaştığı (ve neyin sessizce kaynaşmadığı) [04-boolean-and-geometry-rules.md](04-boolean-and-geometry-rules.md) içinde ele alınmıştır.
 
-## The update loop — mandatory
+## Update döngüsü — zorunlu
 
-NX does not refresh the model until you tell it to. Wrap every feature in an undo mark + update:
+NX, sen söyleyene kadar modeli yenilemez. Her feature'ı bir undo mark + update ile sar:
 
 ```python
 mark = session.SetUndoMark(NXOpen.Session.MarkVisibility.Visible, "add boss")
@@ -100,24 +100,24 @@ session.UpdateManager.DoUpdate(mark)                          # REQUIRED after e
 # session.UndoToMark(mark, "add boss")
 ```
 
-> **Trap:** skip `DoUpdate` and the model silently doesn't advance — later features attach to stale geometry and fail in confusing ways.
+> **Tuzak:** `DoUpdate`'i atlarsan model sessizce ilerlemez — sonraki feature'lar eski (stale) geometriye bağlanır ve kafa karıştırıcı şekillerde başarısız olur.
 
-Safe deletion goes through the same manager:
+Güvenli silme aynı manager üzerinden yapılır:
 
 ```python
 session.UpdateManager.AddToDeleteList(objs)
 session.UpdateManager.DoUpdate(mark)
 ```
 
-## Body naming (visible in Part Navigator)
+## Gövde adlandırma (Part Navigator'da görünür)
 
 ```python
 body.SetName("Front_Housing")        # alphanumeric + underscore, keep it under ~48 chars
 ```
 
-Name every body you keep — it makes the Part Navigator (and downstream BOM/inspection) legible, and lets you count `built N bodies` vs `named N bodies` to catch orphans (see [04](04-boolean-and-geometry-rules.md)).
+Tuttuğun her gövdeyi adlandır — bu, Part Navigator'ı (ve alt akıştaki BOM/inceleme süreçlerini) okunabilir kılar ve `built N bodies` ile `named N bodies` sayılarını karşılaştırarak yetim (orphan) gövdeleri yakalamanı sağlar (bkz. [04](04-boolean-and-geometry-rules.md)).
 
-## STEP export (AP242)
+## STEP dışa aktarma (AP242)
 
 ```python
 sc = session.DexManager.CreateStepCreator()
@@ -130,18 +130,18 @@ sc.OutputFile = out_path
 sc.Commit(); sc.Destroy()
 ```
 
-## Parasolid export — opt-in and fragile
+## Parasolid dışa aktarma — isteğe bağlı ve kırılgan
 
 ```python
 # NX 2506: session.DexManager.CreateParasolidExporter()
 # (older: CreateParasolidCreator / theUF.Ps.ExportData)
 ```
 
-> **Trap — session poisoning:** export **selected solid bodies only**, never the entire part. If construction curves get swept into a Parasolid export you can hit *"Modeler error: please report fault,"* which corrupts the session. Treat Parasolid export as opt-in and non-fatal, and if you ever see "please report fault," **restart NX completely** — the session is unrecoverable.
+> **Tuzak — session zehirlenmesi:** yalnızca **seçili solid gövdeleri** dışa aktar, asla tüm part'ı değil. Yardımcı (construction) eğriler bir Parasolid export'a dahil olursa *"Modeler error: please report fault,"* hatasıyla karşılaşabilirsin; bu da session'ı bozar. Parasolid export'u isteğe bağlı ve ölümcül olmayan bir işlem olarak ele al ve "please report fault" gördüğünde **NX'i tamamen yeniden başlat** — session artık kurtarılamaz.
 
-## Neutralising parameters for a clean static part
+## Temiz bir statik part için parametrelerin nötrleştirilmesi
 
-To ship a dumb-solid `.prt` (no feature tree, no leftover construction curves):
+Aptal-solid (dumb-solid) bir `.prt` göndermek için (feature ağacı yok, artakalan yardımcı eğri yok):
 
 ```python
 rpb = part.Features.CreateRemoveParametersBuilder()
@@ -150,7 +150,7 @@ rpb.Commit(); rpb.Destroy()
 # then delete the construction curves via the update/delete list
 ```
 
-## Circular pattern (optional; signatures drift between releases)
+## Dairesel pattern (opsiyonel; imzalar sürümler arasında değişkenlik gösterir)
 
 ```python
 pfb = part.Features.CreatePatternFeatureBuilder(NXOpen.Features.Feature.Null)
