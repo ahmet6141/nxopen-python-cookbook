@@ -1,0 +1,25 @@
+# NX build artifacts
+*.prt
+*.stp
+*.step
+*.jt
+*.x_t
+*.x_b
+*.parasolid
+*_views/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
