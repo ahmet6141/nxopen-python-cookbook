@@ -19,10 +19,11 @@ Automating NX from Python is powerful but the API is large, under-documented for
 | [docs/00-getting-started.md](docs/00-getting-started.md) | NX setup, running journals headless vs. GUI, Python stubs for autocomplete, environment notes |
 | [docs/01-core-api.md](docs/01-core-api.md) | Session/Part lifecycle, expressions, extrude, revolve, sections, curves, booleans, the mandatory update loop, body naming, STEP/Parasolid export |
 | [docs/02-verified-recipes.md](docs/02-verified-recipes.md) | 11 copy-paste recipes: edge blend, chamfer, draft, symbolic thread, shell, mirror body, hole package, material assignment, mass properties, PMI notes |
-| [docs/03-pitfalls.md](docs/03-pitfalls.md) | The consolidated trap list — 25 runtime failures with symptom → fix |
+| [docs/03-pitfalls.md](docs/03-pitfalls.md) | The consolidated trap list — 29 runtime failures with symptom → fix |
 | [docs/04-boolean-and-geometry-rules.md](docs/04-boolean-and-geometry-rules.md) | Reliable-boolean rules for procedural modeling: what actually fuses, how to detect silent orphan bodies, vertex-based bounding boxes |
 | [docs/05-capability-inventory.md](docs/05-capability-inventory.md) | Stub-mined inventory of feature factories, standalone boolean/move builders, assembly constraints, the full export list, helix/spline, color & attributes |
 | [docs/06-resources.md](docs/06-resources.md) | Community sites, open-source libraries, and official references worth bookmarking |
+| [docs/07-freeform-lofting.md](docs/07-freeform-lofting.md) | Splines without a sketch, Through-Curves lofting, closing a loft to one or two points, robust datum-by-name lookup, self-cleaning re-runnable generators, parametric Expression read/write-back, Boolean-Intersect volume verification |
 
 Runnable example: [examples/block_with_boss.py](examples/block_with_boss.py) — builds a block + boss, blends and chamfers it, assigns steel, measures mass, and exports STEP, using only the recipes in this repo.
 

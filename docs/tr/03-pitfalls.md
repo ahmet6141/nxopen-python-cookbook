@@ -44,6 +44,17 @@ NXOpen, import sırasında değil çalışma zamanında hata verir ve hata metin
 | 24 | Oturum zehirlenmesi | *"please report fault"* mesajını bir kez gördüğünüzde, oturum kurtarılamaz → **NX'i tamamen kapatıp yeniden başlatın**. |
 | 25 | Fonksiyon-yerel import | *Bir fonksiyonun içinde* `import NXOpen.X` yapmak `NXOpen`'ı yerel bir isim haline getirir → *"cannot access local variable 'NXOpen'."* Alt modül import'larını **modülün en üstüne** koyun. |
 
+## Serbest-form / lofting
+
+Bunlar [07-freeform-lofting.md](07-freeform-lofting.md)'den geliyor — tek bir extrude/revolve profili yerine yığılmış spline kesitlerinden katı üretimi.
+
+| # | Tuzak | Belirti → Çözüm |
+|---|------|---------------|
+| 26 | Sketch'e bağlı spline builder | `CreateSketchSplineBuilder` **aktif bir sketch** gerektirir — hiçbiri açık değilken `Commit()` *"Incorrect object for this operation."* hatasını fırlatır. Sketch'siz eğriler için **`CreateStudioSplineBuilderEx`** kullanın. |
+| 27 | Çoklu-gövde kütle özellikleri sıfır döndürür | **Birden fazla** gövde tutan bir collector üzerinde `NewMassProperties` sessizce **0 hacim / 0 alan** döndürür — tek-gövdeli form çalışırken bile. Her gövdeyi kendi tek-gövdeli collector'ıyla ölçün ve sonuçları toplayın. |
+| 28 | Script'ten `SetCornerPoints` | GUI-kayıtlı journal'larda görünse bile *"Datum plane undefinable"* hatasını fırlatır. Atlayın — `builder.ResizeDuringUpdate = True` ayarlayın ve boyutlandırmayı NX'e bırakın. |
+| 29 | İsimle datum arama | `Datums.FindObject("DATUM_CSYS(0) XZ plane")` yalnızca tam o şablondan üretilmiş parçalarda mevcuttur → yeni/boş/farklı-şablonlu bir parçada *"No object found with this name."* **Geometriyle** (normal yönü) yedek olarak arayın, son çare olarak mutlak orijinde bir datum CSYS oluşturun — bkz. 07 §7.5. |
+
 ## Geometri (yalan söyleyen boolean'lar)
 
 Bunlar kendi sayfalarını hak ediyor çünkü doğrulama (validation), gerçek bir build olmadan bunları yakalayamaz — bkz. **[04-boolean-and-geometry-rules.md](04-boolean-and-geometry-rules.md)**:

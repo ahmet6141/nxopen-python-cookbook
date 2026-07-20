@@ -19,10 +19,11 @@ NX'i Python'dan otomatikleştirmek güçlüdür ama API büyük, headless kullan
 | [docs/tr/00-getting-started.md](docs/tr/00-getting-started.md) | NX kurulumu, journal'ları headless vs. GUI çalıştırma, otomatik tamamlama için Python stub'ları, ortam notları |
 | [docs/tr/01-core-api.md](docs/tr/01-core-api.md) | Session/Part yaşam döngüsü, expression'lar, extrude, revolve, section'lar, curve'ler, boolean'lar, zorunlu update döngüsü, gövde adlandırma, STEP/Parasolid export |
 | [docs/tr/02-verified-recipes.md](docs/tr/02-verified-recipes.md) | 11 kopyala-kullan reçete: edge blend, chamfer, draft, symbolic thread, shell, mirror body, hole package, malzeme atama, kütle özellikleri, PMI notları |
-| [docs/tr/03-pitfalls.md](docs/tr/03-pitfalls.md) | Derlenmiş tuzak listesi — belirti → çözüm biçiminde 25 çalışma-anı hatası |
+| [docs/tr/03-pitfalls.md](docs/tr/03-pitfalls.md) | Derlenmiş tuzak listesi — belirti → çözüm biçiminde 29 çalışma-anı hatası |
 | [docs/tr/04-boolean-and-geometry-rules.md](docs/tr/04-boolean-and-geometry-rules.md) | Prosedürel modelleme için güvenilir-boolean kuralları: neyin gerçekten kaynadığı, sessiz öksüz gövdelerin nasıl tespit edileceği, vertex tabanlı bounding box |
 | [docs/tr/05-capability-inventory.md](docs/tr/05-capability-inventory.md) | Feature fabrikalarının, bağımsız boolean/move builder'larının, montaj kısıtlarının, tam export listesinin, helix/spline, renk & niteliklerin stub-taranmış envanteri |
 | [docs/tr/06-resources.md](docs/tr/06-resources.md) | Topluluk siteleri, açık kaynak kütüphaneler ve yer imine değer resmi referanslar |
+| [docs/tr/07-freeform-lofting.md](docs/tr/07-freeform-lofting.md) | Sketch'siz spline'lar, Through-Curves lofting, bir loft'u tek veya iki noktaya kapatma, isimle sağlam datum arama, kendi kendini temizleyen tekrar-çalıştırılabilir üreticiler, parametrik Expression okuma/geri-yazma, Boolean-Intersect hacim doğrulama |
 
 Çalıştırılabilir örnek: [examples/block_with_boss.py](examples/block_with_boss.py) — bir block + boss kurar, edge blend ve chamfer uygular, çelik atar, kütle ölçer ve STEP dışa aktarır; yalnızca bu repodaki reçeteleri kullanır.
 

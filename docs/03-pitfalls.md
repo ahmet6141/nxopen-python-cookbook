@@ -44,6 +44,17 @@ NXOpen fails at runtime, not at import, and the error strings rarely name the re
 | 24 | Session poisoning | Once you see *"please report fault,"* the session is unrecoverable → **close NX fully and restart**. |
 | 25 | Function-local import | `import NXOpen.X` *inside a function* makes `NXOpen` a local name → *"cannot access local variable 'NXOpen'."* Put submodule imports at **module top**. |
 
+## Free-form / lofting
+
+These come from [07-freeform-lofting.md](07-freeform-lofting.md) — building solids from stacked spline sections rather than a single extrude/revolve profile.
+
+| # | Trap | Symptom → Fix |
+|---|------|---------------|
+| 26 | Sketch-bound spline builder | `CreateSketchSplineBuilder` needs an **active sketch** — with none open, `Commit()` raises *"Incorrect object for this operation."* Use **`CreateStudioSplineBuilderEx`** for sketch-free curves. |
+| 27 | Multi-body mass properties returns zero | `NewMassProperties` on a collector holding **several** bodies (a multi-body kit) silently returns **0 volume / 0 area** — even though the single-body form works. Measure each body with its own single-body collector and sum the results. |
+| 28 | `SetCornerPoints` on a scripted datum plane | Raises *"Datum plane undefinable"* even though GUI-recorded journals show it. Skip it — set `builder.ResizeDuringUpdate = True` and let NX size the plane. |
+| 29 | Datum-by-name lookup | `Datums.FindObject("DATUM_CSYS(0) XZ plane")` only exists on parts built from that exact template → *"No object found with this name"* on a fresh/empty/differently-templated part. Search by **geometry** (normal direction) as a fallback, and create an absolute-origin datum CSYS as a last resort — see 07 §7.5. |
+
 ## Geometry (booleans that lie)
 
 These deserve their own page because validation can't catch them without a real build — see **[04-boolean-and-geometry-rules.md](04-boolean-and-geometry-rules.md)**:
