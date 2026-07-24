@@ -24,6 +24,9 @@ Automating NX from Python is powerful but the API is large, under-documented for
 | [docs/05-capability-inventory.md](docs/05-capability-inventory.md) | Stub-mined inventory of feature factories, standalone boolean/move builders, assembly constraints, the full export list, helix/spline, color & attributes |
 | [docs/06-resources.md](docs/06-resources.md) | Community sites, open-source libraries, and official references worth bookmarking |
 | [docs/07-freeform-lofting.md](docs/07-freeform-lofting.md) | Splines without a sketch, Through-Curves lofting, closing a loft to one or two points, robust datum-by-name lookup, self-cleaning re-runnable generators, parametric Expression read/write-back, Boolean-Intersect volume verification |
+| [docs/08-primitives-sweeps-and-surfacing.md](docs/08-primitives-sweeps-and-surfacing.md) | Block/cylinder/cone/sphere primitives, tube along a 3D path, Swept, Ruled, the sheet workflow (thicken/sew), trim & split, a which-tool decision table *(reference tier — see banner)* |
+| [docs/09-sketches-patterns-and-feature-editing.md](docs/09-sketches-patterns-and-feature-editing.md) | When a headless sketch is worth it and the minimal pattern, linear/circular Pattern Feature, scale & copy bodies, suppressing/re-parameterizing/deleting existing features *(reference tier — see banner)* |
+| [docs/10-selecting-geometry-without-a-mouse.md](docs/10-selecting-geometry-without-a-mouse.md) | Programmatic selection: topology traversal, classifying faces/edges, find-me-the-top-face helpers, vertex bounding boxes, names/attributes/layers, measuring, why not `FindObject` *(reference tier — see banner)* |
 
 Runnable example: [examples/block_with_boss.py](examples/block_with_boss.py) — builds a block + boss, blends and chamfers it, assigns steel, measures mass, and exports STEP, using only the recipes in this repo.
 
@@ -39,6 +42,7 @@ A headless journal opens a **second** NX session cleanly even while the GUI is a
 
 ## Scope & honesty
 
+- **Two tiers of confidence.** Docs 00–07 are **live-verified** on NX 2506. Docs 08–10 are **reference tier**: assembled from the API reference, recorded-journal patterns, and community examples, clearly bannered as not-yet-verified — run one, confirm it, and a PR promotes it.
 - **Version:** everything was proven on NX 2506. NXOpen shifts between releases; signatures that changed are called out, but always verify against your own version. When in doubt, mine your local stubs (`.../UGOPEN/pythonStubs/`) — the signatures there match your exact install.
 - **Not affiliated with Siemens.** NX, NXOpen, and Parasolid are trademarks of Siemens Digital Industries Software. This is an independent, community reference.
 - **No warranty.** These recipes mutate CAD geometry and can overwrite files. Read before you run.

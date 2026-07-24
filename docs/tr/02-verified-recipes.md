@@ -221,4 +221,4 @@ Kimse bununla vakit kaybetmesin diye buraya listelendi: headless bir journal'dan
 
 ### Bunların gerçek olduğuna dair akıl sağlığı kontrolü
 
-80×60×30 bir blok + Ø20×25 bir boss, tam olarak analitik toplama (144000 + 7853.98) eşit **V = 151853.98 mm³** ölçüldü. Bir blend + chamfer sonrasında **151324.66 mm³**'e düştü (makul miktarda malzeme kaldırılmış). Steel atamak **1.1847 kg → ρ = 7.829 g/cm³** verdi, bu da NX'in Steel'iyle eşleşiyor. [examples/block_with_boss.py](../examples/block_with_boss.py) içindeki örnek bunu yeniden üretir.
+80×60×30 bir blok + Ø20×25 bir boss, tam olarak analitik toplama (144000 + 7853.98) eşit **V = 151853.98 mm³** ölçüldü. Bir blend + chamfer sonrasında **151324.66 mm³**'e düştü (makul miktarda malzeme kaldırılmış). Steel atamak **1.1847 kg → ρ = 7.829 g/cm³** verdi, bu da NX'in Steel'iyle eşleşiyor. [examples/block_with_boss.py](../../examples/block_with_boss.py) içindeki örnek bunu yeniden üretir.

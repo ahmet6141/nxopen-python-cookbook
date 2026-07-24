@@ -24,6 +24,9 @@ NX'i Python'dan otomatikleştirmek güçlüdür ama API büyük, headless kullan
 | [docs/tr/05-capability-inventory.md](docs/tr/05-capability-inventory.md) | Feature fabrikalarının, bağımsız boolean/move builder'larının, montaj kısıtlarının, tam export listesinin, helix/spline, renk & niteliklerin stub-taranmış envanteri |
 | [docs/tr/06-resources.md](docs/tr/06-resources.md) | Topluluk siteleri, açık kaynak kütüphaneler ve yer imine değer resmi referanslar |
 | [docs/tr/07-freeform-lofting.md](docs/tr/07-freeform-lofting.md) | Sketch'siz spline'lar, Through-Curves lofting, bir loft'u tek veya iki noktaya kapatma, isimle sağlam datum arama, kendi kendini temizleyen tekrar-çalıştırılabilir üreticiler, parametrik Expression okuma/geri-yazma, Boolean-Intersect hacim doğrulama |
+| [docs/tr/08-primitives-sweeps-and-surfacing.md](docs/tr/08-primitives-sweeps-and-surfacing.md) | Block/silindir/koni/küre primitifleri, 3B yol boyunca tube, Swept, Ruled, sheet iş akışı (thicken/sew), trim & split, hangi-araç karar tablosu *(referans katmanı — banner'a bak)* |
+| [docs/tr/09-sketches-patterns-and-feature-editing.md](docs/tr/09-sketches-patterns-and-feature-editing.md) | Headless sketch ne zaman değer ve minimal kalıbı, doğrusal/dairesel Pattern Feature, gövde ölçekleme & kopyalama, var olan feature'ları suppress etme/yeniden parametrelendirme/silme *(referans katmanı — banner'a bak)* |
+| [docs/tr/10-selecting-geometry-without-a-mouse.md](docs/tr/10-selecting-geometry-without-a-mouse.md) | Programatik seçim: topoloji gezintisi, yüzey/kenar sınıflandırma, üst-yüzeyi-bul yardımcıları, vertex bounding box, isimler/nitelikler/katmanlar, ölçüm, neden `FindObject` değil *(referans katmanı — banner'a bak)* |
 
 Çalıştırılabilir örnek: [examples/block_with_boss.py](examples/block_with_boss.py) — bir block + boss kurar, edge blend ve chamfer uygular, çelik atar, kütle ölçer ve STEP dışa aktarır; yalnızca bu repodaki reçeteleri kullanır.
 
@@ -39,6 +42,7 @@ Bir headless journal, GUI zaten açıkken bile temiz bir **ikinci** NX oturumu a
 
 ## Kapsam & dürüstlük
 
+- **İki güven katmanı.** 00–07 dokümanları NX 2506'da **canlı doğrulandı**. 08–10 dokümanları **referans katmanıdır**: API referansından, kayıtlı-journal kalıplarından ve topluluk örneklerinden derlendi, henüz-doğrulanmadı diye açıkça banner'landı — birini çalıştır, doğrula, bir PR onu terfi ettirir.
 - **Sürüm:** her şey NX 2506'da kanıtlandı. NXOpen sürümler arası değişir; imzalar değiştiğinde işaretlenmiştir ama daima kendi sürümünüzde doğrulayın. Emin değilseniz yerel stub'larınızı tarayın (`.../UGOPEN/pythonStubs/`) — oradaki imzalar tam kurulumunuzla eşleşir.
 - **Siemens ile bağlantılı değildir.** NX, NXOpen ve Parasolid, Siemens Digital Industries Software'in ticari markalarıdır. Bu, bağımsız bir topluluk referansıdır.
 - **Garanti yok.** Bu reçeteler CAD geometrisini değiştirir ve dosyaların üzerine yazabilir. Çalıştırmadan önce okuyun.
