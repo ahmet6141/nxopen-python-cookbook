@@ -4,6 +4,10 @@
 
 Everything in [01-core-api.md](01-core-api.md) builds from a **single** profile (extrude/revolve). This page covers the other family: solids **lofted through a stack of curved cross-sections** — the technique behind wings, fuselages, nacelles, blades, and any body whose shape changes continuously along an axis. Verified live across multiple large headless builds (multi-hundred-body parametric aircraft/UCAV generators, NX 2506).
 
+**In this page:** sketch-free splines (7.1) · Through-Curves lofting (7.2) · closing a loft to a point at one end (7.3) or both ends (7.4) · robust datum-plane lookup (7.5) · idempotent re-runs (7.6) · Expression-driven parameters (7.7) · overlap-volume verification (7.8).
+
+All snippets assume the boilerplate from [01-core-api.md](01-core-api.md): `session = NXOpen.Session.GetSession()` and `part` is the work part.
+
 ---
 
 ## 7.1 An independent spline, no sketch required
@@ -13,19 +17,21 @@ b = part.Features.CreateStudioSplineBuilderEx(None)
 b.DrawingPlaneOption = NXOpen.Features.StudioSplineBuilderEx.DrawingPlaneOptions.General
 b.DrawingPlane = part.Planes.CreatePlane(origin, normal, NXOpen.SmartObject.UpdateOption.WithinModeling)
 b.InputCurveOption = NXOpen.Features.StudioSplineBuilderEx.InputCurveOptions.Hide
-b.MatchKnotsType    = NXOpen.Features.StudioSplineBuilderEx.MatchKnotsTypes.None
+b.MatchKnotsType    = NXOpen.Features.StudioSplineBuilderEx.MatchKnotsTypes.NotSet
 b.IsAssociative = False     # independent of the points once built — robust for generated geometry
 b.IsPeriodic    = False     # True = seamless closed loop (fuselage ring); False = sharp trailing edge (airfoil)
 b.Degree        = 3
 
-for p in points:                                        # p: list[Point3d]
+temp_points = []
+for p in points:                                        # points: list[Point3d]
     pt = part.Points.CreatePoint(p)
+    temp_points.append(pt)
     gcd = b.ConstraintManager.CreateGeometricConstraintData()
     gcd.Point = pt
     b.ConstraintManager.Append(gcd)
 
 b.Commit()
-spline = b.Curve            # the result lives on this property
+spline = b.Curve            # read BEFORE Destroy() — the result lives on this property
 b.Destroy()
 
 # clean up the construction points (safe once IsAssociative=False):
@@ -34,6 +40,8 @@ for pt in temp_points:
 ```
 
 > **Trap:** `CreateSketchSplineBuilder` requires an **active sketch** — call it with none open and `Commit()` raises *"Incorrect object for this operation."* For sketch-free curve generation (the normal case when you're building geometry from parameters, not from a GUI sketch session), always use **`CreateStudioSplineBuilderEx`** instead.
+>
+> **Trap:** the .NET reference lists a `MatchKnotsTypes.None` member, but `None` is a reserved word in Python — `MatchKnotsTypes.None` is a **`SyntaxError`** before NX even loads the journal. The Python binding (and every GUI-recorded Python journal) spells it **`NotSet`**.
 
 ---
 
@@ -58,9 +66,9 @@ b.PreserveShape = False
 b.ClosedInV = False
 b.NormalToEndSections = False
 
-for spline in sections:                                  # sections: list[Spline], in loft order
-    sec = part.Sections.CreateSection(0.0095, 0.01, 0.5)
-    sec.SetAllowedEntityTypes(NXOpen.Section.AllowTypes.OnlyCurves)
+for spline, help_point in zip(sections, help_points):    # sections: list[Spline], in loft order;
+    sec = part.Sections.CreateSection(0.0095, 0.01, 0.5)  # help_point: a Point3d on (or near) its spline —
+    sec.SetAllowedEntityTypes(NXOpen.Section.AllowTypes.OnlyCurves)  # e.g. the first input point it was built from
     rule = part.ScRuleFactory.CreateRuleCurveDumb([spline])
     sec.AllowSelfIntersection(False)
     sec.AllowDegenerateCurves(False)
@@ -115,6 +123,7 @@ def loft_with_poles(start_pole, end_pole, sections, helps, name):
     if end_pole is not None:
         append_pole_section(b, end_pole)             # SAME helper, appended LAST
     feat = b.CommitFeature()
+    feat.SetName(name)                               # named -> cleanup_previous (7.6) can find it on re-run
     b.Destroy()
     return feat.GetBodies()[0]
 ```
@@ -140,24 +149,30 @@ One generator function then produces a fully pointed body **or** a body with a f
 ```python
 def find_or_create_xz_plane():
     try:
-        return part.Datums.FindObject("DATUM_CSYS(0) XZ plane")
+        return part.Datums.FindObject("DATUM_CSYS(0) XZ plane")   # 1) fast path — template parts only
     except Exception:
         pass
 
-    for o in part.Datums:                                    # 2) search by geometry, not name
-        if isinstance(o, NXOpen.DatumPlane) and abs(abs(o.Normal.Y) - 1.0) < 1e-6 \
-           and abs(o.Normal.X) < 1e-6 and abs(o.Normal.Z) < 1e-6:
-            return o
+    def xz_by_geometry():                                    # 2) search by geometry, not name
+        for o in part.Datums:
+            if isinstance(o, NXOpen.DatumPlane) and abs(abs(o.Normal.Y) - 1.0) < 1e-6 \
+               and abs(o.Normal.X) < 1e-6 and abs(o.Normal.Z) < 1e-6:
+                return o
+        return None
 
-    # 3) nothing found at all -> build an absolute-origin datum CSYS, then repeat step 2
+    plane = xz_by_geometry()
+    if plane is not None:
+        return plane
+
+    # 3) nothing found at all -> build an absolute-origin datum CSYS, then search again
     db = part.Features.CreateDatumCsysBuilder(None)
-    xf = part.Xforms.CreateXform(NXOpen.Point3d(0, 0, 0), NXOpen.Vector3d(1, 0, 0),
-                                  NXOpen.Vector3d(0, 1, 0), NXOpen.SmartObject.UpdateOption.WithinModeling, 1.0)
+    xf = part.Xforms.CreateXform(NXOpen.Point3d(0.0, 0.0, 0.0), NXOpen.Vector3d(1.0, 0.0, 0.0),
+                                  NXOpen.Vector3d(0.0, 1.0, 0.0), NXOpen.SmartObject.UpdateOption.WithinModeling, 1.0)
     csys = part.CoordinateSystems.CreateCoordinateSystem(xf, NXOpen.SmartObject.UpdateOption.WithinModeling)
     db.Csys = csys
     db.CommitFeature()
     db.Destroy()
-    # repeat the step-2 search — it will find it now
+    return xz_by_geometry()                                  # finds the plane just created
 ```
 
 > **Related trap:** `DatumPlaneBuilder.SetCornerPoints(c1..c4)` called from a script raises *"Datum plane undefinable"* — even though GUI-recorded journals show it. Skip it; set `builder.ResizeDuringUpdate = True` instead and let NX size the plane automatically.

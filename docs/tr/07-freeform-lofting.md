@@ -4,6 +4,10 @@
 
 [01-core-api.md](01-core-api.md) içindeki her şey **tek** bir profilden (extrude/revolve) inşa edilir. Bu sayfa diğer aileyi kapsar: **kesitler yığını üzerinden loft'lanan** katılar — kanat, gövde, nacelle, pal ve şekli bir eksen boyunca sürekli değişen her cismin arkasındaki teknik. Büyük, çok-parçalı headless build'lerde (yüzlerce gövdeli parametrik uçak/UCAV üreticileri, NX 2506) canlı doğrulanmıştır.
 
+**Bu sayfada:** sketch'siz spline'lar (7.1) · Through-Curves lofting (7.2) · loft'u tek uçtan (7.3) veya iki uçtan (7.4) noktaya kapatma · sağlam datum-plane arama (7.5) · idempotent yeniden-çalıştırma (7.6) · Expression'la sürülen parametreler (7.7) · kesişim-hacmi doğrulama (7.8).
+
+Tüm parçacıklar [01-core-api.md](01-core-api.md) içindeki boilerplate'i varsayar: `session = NXOpen.Session.GetSession()` ve `part` çalışma parçasıdır.
+
 ---
 
 ## 7.1 Sketch gerektirmeyen bağımsız bir spline
@@ -13,19 +17,21 @@ b = part.Features.CreateStudioSplineBuilderEx(None)
 b.DrawingPlaneOption = NXOpen.Features.StudioSplineBuilderEx.DrawingPlaneOptions.General
 b.DrawingPlane = part.Planes.CreatePlane(origin, normal, NXOpen.SmartObject.UpdateOption.WithinModeling)
 b.InputCurveOption = NXOpen.Features.StudioSplineBuilderEx.InputCurveOptions.Hide
-b.MatchKnotsType    = NXOpen.Features.StudioSplineBuilderEx.MatchKnotsTypes.None
+b.MatchKnotsType    = NXOpen.Features.StudioSplineBuilderEx.MatchKnotsTypes.NotSet
 b.IsAssociative = False     # kurulduktan sonra noktalardan bağımsız — üretilmiş geometri için sağlam
 b.IsPeriodic    = False     # True = dikişsiz kapalı döngü (gövde halkası); False = keskin firar kenarı (airfoil)
 b.Degree        = 3
 
-for p in points:                                        # p: list[Point3d]
+temp_points = []
+for p in points:                                        # points: list[Point3d]
     pt = part.Points.CreatePoint(p)
+    temp_points.append(pt)
     gcd = b.ConstraintManager.CreateGeometricConstraintData()
     gcd.Point = pt
     b.ConstraintManager.Append(gcd)
 
 b.Commit()
-spline = b.Curve            # sonuç bu property'de yaşar
+spline = b.Curve            # Destroy()'dan ÖNCE oku — sonuç bu property'de yaşar
 b.Destroy()
 
 # yardımcı (construction) noktaları temizle (IsAssociative=False iken güvenlidir):
@@ -34,6 +40,8 @@ for pt in temp_points:
 ```
 
 > **Tuzak:** `CreateSketchSplineBuilder` **aktif bir sketch** gerektirir — hiçbiri açık değilken `Commit()` *"Incorrect object for this operation."* hatasını fırlatır. Sketch'siz eğri üretimi için (parametrelerden geometri kurarken normal durum budur, bir GUI sketch oturumundan değil) her zaman **`CreateStudioSplineBuilderEx`** kullan.
+>
+> **Tuzak:** .NET referansı bir `MatchKnotsTypes.None` üyesi listeler, ama `None` Python'da ayrılmış bir kelimedir — `MatchKnotsTypes.None` daha NX journal'ı yüklemeden bir **`SyntaxError`** olur. Python binding'i (ve GUI'den kaydedilen her Python journal'ı) bunu **`NotSet`** olarak yazar.
 
 ---
 
@@ -58,9 +66,9 @@ b.PreserveShape = False
 b.ClosedInV = False
 b.NormalToEndSections = False
 
-for spline in sections:                                  # sections: list[Spline], loft sırasında
-    sec = part.Sections.CreateSection(0.0095, 0.01, 0.5)
-    sec.SetAllowedEntityTypes(NXOpen.Section.AllowTypes.OnlyCurves)
+for spline, help_point in zip(sections, help_points):    # sections: list[Spline], loft sırasıyla;
+    sec = part.Sections.CreateSection(0.0095, 0.01, 0.5)  # help_point: spline'ın üzerinde (veya yakınında) bir
+    sec.SetAllowedEntityTypes(NXOpen.Section.AllowTypes.OnlyCurves)  # Point3d — ör. üretildiği ilk girdi noktası
     rule = part.ScRuleFactory.CreateRuleCurveDumb([spline])
     sec.AllowSelfIntersection(False)
     sec.AllowDegenerateCurves(False)
@@ -115,6 +123,7 @@ def loft_with_poles(start_pole, end_pole, sections, helps, name):
     if end_pole is not None:
         append_pole_section(b, end_pole)             # AYNI yardımcı, SON olarak eklenir
     feat = b.CommitFeature()
+    feat.SetName(name)                               # isimli -> cleanup_previous (7.6) tekrar çalıştırmada bulabilir
     b.Destroy()
     return feat.GetBodies()[0]
 ```
@@ -140,24 +149,30 @@ Tek bir üretici fonksiyon, hangi ucun pole hangi ucun `floor_r` clamp'i aldığ
 ```python
 def find_or_create_xz_plane():
     try:
-        return part.Datums.FindObject("DATUM_CSYS(0) XZ plane")
+        return part.Datums.FindObject("DATUM_CSYS(0) XZ plane")   # 1) hızlı yol — yalnızca şablon parçalar
     except Exception:
         pass
 
-    for o in part.Datums:                                    # 2) isim değil GEOMETRİYLE ara
-        if isinstance(o, NXOpen.DatumPlane) and abs(abs(o.Normal.Y) - 1.0) < 1e-6 \
-           and abs(o.Normal.X) < 1e-6 and abs(o.Normal.Z) < 1e-6:
-            return o
+    def xz_by_geometry():                                    # 2) isim değil GEOMETRİYLE ara
+        for o in part.Datums:
+            if isinstance(o, NXOpen.DatumPlane) and abs(abs(o.Normal.Y) - 1.0) < 1e-6 \
+               and abs(o.Normal.X) < 1e-6 and abs(o.Normal.Z) < 1e-6:
+                return o
+        return None
 
-    # 3) hiçbiri yoksa -> mutlak orijinde bir datum CSYS kur, sonra 2. adımı tekrarla
+    plane = xz_by_geometry()
+    if plane is not None:
+        return plane
+
+    # 3) hiçbiri yoksa -> mutlak orijinde bir datum CSYS kur, sonra tekrar ara
     db = part.Features.CreateDatumCsysBuilder(None)
-    xf = part.Xforms.CreateXform(NXOpen.Point3d(0, 0, 0), NXOpen.Vector3d(1, 0, 0),
-                                  NXOpen.Vector3d(0, 1, 0), NXOpen.SmartObject.UpdateOption.WithinModeling, 1.0)
+    xf = part.Xforms.CreateXform(NXOpen.Point3d(0.0, 0.0, 0.0), NXOpen.Vector3d(1.0, 0.0, 0.0),
+                                  NXOpen.Vector3d(0.0, 1.0, 0.0), NXOpen.SmartObject.UpdateOption.WithinModeling, 1.0)
     csys = part.CoordinateSystems.CreateCoordinateSystem(xf, NXOpen.SmartObject.UpdateOption.WithinModeling)
     db.Csys = csys
     db.CommitFeature()
     db.Destroy()
-    # 2. adımdaki aramayı tekrarla — artık bulacaktır
+    return xz_by_geometry()                                  # az önce kurulan düzlemi bulur
 ```
 
 > **İlgili tuzak:** `DatumPlaneBuilder.SetCornerPoints(c1..c4)` script'ten çağrıldığında *"Datum plane undefinable"* hatası fırlatır — GUI-kayıtlı journal'larda görünse bile. Atla; onun yerine `builder.ResizeDuringUpdate = True` ayarla ve boyutlandırmayı NX'e bırak.
